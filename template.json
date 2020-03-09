@@ -1,0 +1,80 @@
+{
+  "variables": {
+    "region": "us-east-1",
+    "source_ami": "ami-4bf3d731",
+    "ssh_username": "centos",
+    "os": "Linux",
+    "os_version": "CentOS",
+    "release": "8.1-1.1911.0.8",
+    "surrogate_device_name": "/dev/xvdb"
+  },
+  "builders": [
+    {
+      "ami_name": "{{user `os_version`}} {{user `release`}} {{isotime \"2006-01-02-150405\"}}",
+      "ami_description": "{{user `os_version`}} {{user `release`}} {{isotime \"2006-01-02-150405\"}}",
+      "ami_groups": "all",
+      "instance_type": "t2.micro",
+      "associate_public_ip_address": true,
+      "type": "amazon-ebssurrogate",
+      "region": "{{user `region`}}",
+      "source_ami": "{{user `source_ami`}}",
+      "ami_virtualization_type": "hvm",
+      "subnet_filter": {
+        "filters": {
+          "state": "available"
+        },
+        "most_free": true,
+        "random": true
+      },
+      "launch_block_device_mappings": [
+        {
+          "device_name": "{{user `surrogate_device_name`}}",
+          "volume_size": 3,
+          "encrypted": false,
+          "volume_type": "gp2",
+          "delete_on_termination": true
+        }
+      ],
+      "ami_root_device": {
+        "source_device_name": "{{user `surrogate_device_name`}}",
+        "device_name": "/dev/sda1",
+        "volume_size": "8",
+        "volume_type": "gp2",
+        "delete_on_termination": true
+      },
+      "ebs_optimized": false,
+      "ena_support": true,
+      "sriov_support": true,
+      "force_delete_snapshot": true,
+      "encrypt_boot": false,
+      "run_tags": {
+        "OS": "{{user `os`}}",
+        "OS_Version": "{{user `os_version`}}",
+        "Release": "{{user `os_version`}} {{user `release`}}"
+      },
+      "run_volume_tags": {
+        "OS": "{{user `os`}}",
+        "OS_Version": "{{user `os_version`}}",
+        "Release": "{{user `os_version`}} {{user `release`}}"
+      },
+      "tags": {
+        "OS": "{{user `os`}}",
+        "OS_Version": "{{user `os_version`}}",
+        "Release": "{{user `os_version`}} {{user `release`}}"
+      },
+      "ssh_username": "{{user `ssh_username`}}",
+      "ssh_pty": "true"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "script": "provision.bash",
+      "environment_vars": [
+        "DEVICE={{user `surrogate_device_name`}}",
+        "RELEASE={{user `release`}}"
+      ],
+      "execute_command": "chmod +x {{.Path}}; sudo {{ .Vars }} {{.Path}}"
+    }
+  ]
+}
