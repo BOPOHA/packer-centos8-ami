@@ -43,7 +43,7 @@ dnf --installroot=$ROOTFS --nogpgcheck --setopt=install_weak_deps=False \
    openssh-clients openssh-server passwd plymouth policycoreutils prefixdevname \
    procps-ng  rng-tools rootfiles rpm rsyslog selinux-policy-targeted setup \
    shadow-utils sssd-kcm sudo systemd util-linux vim-minimal xfsprogs \
-   chrony cloud-init
+   chrony cloud-init cloud-utils-growpart
 
 cat > $ROOTFS/etc/resolv.conf << HABR
 nameserver 169.254.169.253
