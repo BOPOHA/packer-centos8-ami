@@ -52,12 +52,26 @@ HABR
 cat > $ROOTFS/etc/sysconfig/network << HABR
 NETWORKING=yes
 NOZEROCONF=yes
+NETWORKING_IPV6=yes
+IPV6_AUTOCONF=yes
+
 HABR
 
 cat > $ROOTFS/etc/sysconfig/network-scripts/ifcfg-eth0  << HABR
 DEVICE=eth0
+DHCPV6C=yes
+IPV6INIT=yes
 ONBOOT=yes
 BOOTPROTO=dhcp
+TYPE=Ethernet
+USERCTL=no
+
+HABR
+
+cat > $ROOTFS/etc/cloud/cloud.cfg.d/99-custom-networking.cfg << HABR
+network:
+  config: disabled
+
 HABR
 
 cat > $ROOTFS/etc/fstab << HABR
