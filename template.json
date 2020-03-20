@@ -5,7 +5,7 @@
     "ssh_username": "centos",
     "os": "Linux",
     "os_version": "CentOS",
-    "release": "8.1-1.1911.0.8",
+    "release": "8.1-1.1911.0.9",
     "surrogate_device_name": "/dev/xvdb"
   },
   "builders": [

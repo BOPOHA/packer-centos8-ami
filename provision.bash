@@ -6,7 +6,7 @@ yum update --exclude="kernel*" --exclude "grub2*" --exclude "selinux-*" -y
 yum install -y dnf
 
 # DEVICE=/dev/xvdb
-# RELEASE="8.1-1.1911.0.8"
+# RELEASE="8.1-1.1911.0.9"
 echo "ENV variables from packer template: dev=$DEVICE release=$RELEASE"
 
 ROOTFS=/rootfs
@@ -43,10 +43,23 @@ dnf --installroot=$ROOTFS --nogpgcheck --setopt=install_weak_deps=False \
    openssh-clients openssh-server passwd plymouth policycoreutils prefixdevname \
    procps-ng  rng-tools rootfiles rpm rsyslog selinux-policy-targeted setup \
    shadow-utils sssd-kcm sudo systemd util-linux vim-minimal xfsprogs \
-   chrony cloud-init cloud-utils-growpart
+   chrony cloud-init cloud-utils-growpart epel-release
+dnf --installroot=$ROOTFS --nogpgcheck --setopt=install_weak_deps=False \
+   -y install vim-enhanced atop screen
 
 cat > $ROOTFS/etc/resolv.conf << HABR
 nameserver 169.254.169.253
+
+HABR
+
+cat > $ROOTFS/etc/chrony.conf << HABR
+server 169.254.169.123 prefer iburst
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+keyfile /etc/chrony.keys
+leapsectz right/UTC
+
 HABR
 
 cat > $ROOTFS/etc/sysconfig/network << HABR
@@ -76,12 +89,12 @@ HABR
 
 cat > $ROOTFS/etc/fstab << HABR
 LABEL=root / xfs defaults,relatime 1 1
+
 HABR
 
 sed -i  "s/cloud-user/centos/" $ROOTFS/etc/cloud/cloud.cfg
-echo "server 169.254.169.123 prefer iburst minpoll 4 maxpoll 4" >> $ROOTFS/etc/chrony.conf
-sed -i "/^pool /d" $ROOTFS/etc/chrony.conf
 sed -i "s/^AcceptEnv/# \0/" $ROOTFS/etc/ssh/sshd_config
+sed -i "s/^X11Forwarding/# \0/" $ROOTFS/etc/ssh/sshd_config
 
 cat > $ROOTFS/etc/default/grub << HABR
 GRUB_TIMEOUT=1
