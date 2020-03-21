@@ -92,8 +92,13 @@ LABEL=root / xfs defaults,relatime 1 1
 
 HABR
 
-sed -i  "s/cloud-user/centos/" $ROOTFS/etc/cloud/cloud.cfg
-sed -i "s/^AcceptEnv/# \0/" $ROOTFS/etc/ssh/sshd_config
+cat >> $ROOTFS/etc/dnf/dnf.conf << HABR
+install_weak_deps=False
+
+HABR
+
+sed -i "s/cloud-user/centos/"   $ROOTFS/etc/cloud/cloud.cfg
+sed -i "s/^AcceptEnv/# \0/"     $ROOTFS/etc/ssh/sshd_config
 sed -i "s/^X11Forwarding/# \0/" $ROOTFS/etc/ssh/sshd_config
 
 cat > $ROOTFS/etc/default/grub << HABR
