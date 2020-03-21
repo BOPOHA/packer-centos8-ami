@@ -43,7 +43,7 @@ dnf --installroot=$ROOTFS --nogpgcheck --setopt=install_weak_deps=False \
    openssh-clients openssh-server passwd plymouth policycoreutils prefixdevname \
    procps-ng  rng-tools rootfiles rpm rsyslog selinux-policy-targeted setup \
    shadow-utils sssd-kcm sudo systemd util-linux vim-minimal xfsprogs \
-   chrony cloud-init cloud-utils-growpart epel-release
+   chrony cloud-init cloud-utils-growpart epel-release parted
 dnf --installroot=$ROOTFS --nogpgcheck --setopt=install_weak_deps=False \
    -y install vim-enhanced atop screen
 
@@ -120,6 +120,7 @@ chroot $ROOTFS systemctl enable network.service
 chroot $ROOTFS systemctl enable sshd.service
 chroot $ROOTFS systemctl enable cloud-init.service
 chroot $ROOTFS systemctl mask tmp.mount
+sync
 umount $ROOTFS/{proc,sys,dev,run}
 
 dnf --installroot=$ROOTFS clean all
