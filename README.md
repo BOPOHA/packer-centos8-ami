@@ -7,6 +7,6 @@ $ AWS_PROFILE=test packer build template.json
 ...
 ==> Builds finished. The artifacts of successful builds are:
 --> amazon-ebssurrogate: AMIs were created:
-us-east-1: ami-098b678b45113856c
+us-east-1: ami-0394e0a640cfb4ba5
 ```
 

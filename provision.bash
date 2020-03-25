@@ -35,7 +35,7 @@ rpm --root=$ROOTFS -ivh \
   $PKGSURL/centos-repos-$RELEASE.el8.x86_64.rpm
 
 dnf --installroot=$ROOTFS --nogpgcheck --setopt=install_weak_deps=False \
-   -y install audit authselect basesystem bash biosdevname coreutils \
+   -y install audit authselect basesystem bash coreutils \
    cronie curl dnf dnf-plugins-core dnf-plugin-spacewalk dracut-config-generic \
    dracut-config-rescue e2fsprogs filesystem firewalld glibc grub2 grubby hostname \
    initscripts iproute iprutils iputils irqbalance kbd kernel kernel-tools \
@@ -43,14 +43,15 @@ dnf --installroot=$ROOTFS --nogpgcheck --setopt=install_weak_deps=False \
    openssh-clients openssh-server passwd plymouth policycoreutils prefixdevname \
    procps-ng  rng-tools rootfiles rpm rsyslog selinux-policy-targeted setup \
    shadow-utils sssd-kcm sudo systemd util-linux vim-minimal xfsprogs \
-   chrony cloud-init cloud-utils-growpart epel-release parted
+   chrony cloud-init cloud-utils-growpart epel-release parted lvm2
 dnf --installroot=$ROOTFS --nogpgcheck --setopt=install_weak_deps=False \
    -y install vim-enhanced atop screen
 
-cat > $ROOTFS/etc/resolv.conf << HABR
-nameserver 169.254.169.253
-
-HABR
+# it will be configured with dhcpclient on boot
+#cat > $ROOTFS/etc/resolv.conf << HABR
+#nameserver 169.254.169.253
+#
+#HABR
 
 cat > $ROOTFS/etc/chrony.conf << HABR
 server 169.254.169.123 prefer iburst
@@ -67,6 +68,7 @@ NETWORKING=yes
 NOZEROCONF=yes
 NETWORKING_IPV6=yes
 IPV6_AUTOCONF=yes
+PERSISTENT_DHCLIENT=1
 
 HABR
 
@@ -74,6 +76,7 @@ cat > $ROOTFS/etc/sysconfig/network-scripts/ifcfg-eth0  << HABR
 DEVICE=eth0
 DHCPV6C=yes
 IPV6INIT=yes
+IPV6_FAILURE_FATAL=no
 ONBOOT=yes
 BOOTPROTO=dhcp
 TYPE=Ethernet
@@ -101,13 +104,19 @@ sed -i "s/cloud-user/centos/"   $ROOTFS/etc/cloud/cloud.cfg
 sed -i "s/^AcceptEnv/# \0/"     $ROOTFS/etc/ssh/sshd_config
 sed -i "s/^X11Forwarding/# \0/" $ROOTFS/etc/ssh/sshd_config
 
+# Disable unneeded GSS-API/Kerberos
+sed -i "s/^GSSAPI/# \0/" $ROOTFS/etc/ssh/sshd_config
+
+# ed25519 is not allowed by FIPS policy
+sed -i "s/^HostKey \/etc\/ssh\/ssh_host_ed25519_key/# \0/" $ROOTFS/etc/ssh/sshd_config
+
 cat > $ROOTFS/etc/default/grub << HABR
 GRUB_TIMEOUT=1
 GRUB_DISTRIBUTOR="$(sed 's, release .*$,,g' /etc/system-release)"
 GRUB_DEFAULT=saved
 GRUB_DISABLE_SUBMENU=true
 GRUB_TERMINAL_OUTPUT="console"
-GRUB_CMDLINE_LINUX="crashkernel=auto console=ttyS0,115200n8 console=tty0 net.ifnames=0 biosdevname=0"
+GRUB_CMDLINE_LINUX="crashkernel=auto console=ttyS0,115200n8 console=tty0 net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 fips=1"
 GRUB_DISABLE_RECOVERY="true"
 GRUB_ENABLE_BLSCFG=true
 HABR
