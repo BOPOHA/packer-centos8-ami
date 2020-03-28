@@ -11,7 +11,7 @@
   "builders": [
     {
       "ami_name": "{{user `os_version`}} {{user `release`}} {{isotime \"2006-01-02-150405\"}}",
-      "ami_description": "{{user `os_version`}} {{user `release`}} {{isotime \"2006-01-02-150405\"}}",
+      "ami_description": "{{user `os_version`}} {{user `release`}} {{isotime \"2006-01-02-150405\"}} \nSpecs here: https://github.com/BOPOHA/packer-centos8-ami",
       "ami_groups": "all",
       "instance_type": "t2.micro",
       "associate_public_ip_address": true,

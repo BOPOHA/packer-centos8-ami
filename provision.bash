@@ -34,18 +34,76 @@ rpm --root=$ROOTFS -ivh \
   $PKGSURL/centos-gpg-keys-$RELEASE.el8.noarch.rpm \
   $PKGSURL/centos-repos-$RELEASE.el8.x86_64.rpm
 
-dnf --installroot=$ROOTFS --nogpgcheck --setopt=install_weak_deps=False \
-   -y install audit authselect basesystem bash coreutils \
-   cronie curl dnf dnf-plugins-core dnf-plugin-spacewalk dracut-config-generic \
-   dracut-config-rescue e2fsprogs filesystem firewalld glibc grub2 grubby hostname \
-   initscripts iproute iprutils iputils irqbalance kbd kernel kernel-tools \
-   kexec-tools less linux-firmware lshw lsscsi ncurses network-scripts \
-   openssh-clients openssh-server passwd plymouth policycoreutils prefixdevname \
-   procps-ng  rng-tools rootfiles rpm rsyslog selinux-policy-targeted setup \
-   shadow-utils sssd-kcm sudo systemd util-linux vim-minimal xfsprogs \
-   chrony cloud-init cloud-utils-growpart epel-release parted lvm2
-dnf --installroot=$ROOTFS --nogpgcheck --setopt=install_weak_deps=False \
-   -y install vim-enhanced atop screen
+# Instal only Core Mandatory packages, without man-db, tuned, yum, dnf-plugin-spacewalk.
+# Something like here:
+#   dnf groupinstall core -e man-db  -e tuned -e yum
+# Look more here: `dnf group info core`
+dnf --installroot=$ROOTFS --nogpgcheck --setopt=install_weak_deps=False -y install \
+    audit \
+    basesystem \
+    bash \
+    coreutils \
+    cronie \
+    curl \
+    dnf \
+    e2fsprogs \
+    filesystem \
+    firewalld \
+    glibc \
+    grubby \
+    hostname \
+    initscripts \
+    iproute \
+    iprutils \
+    iputils \
+    irqbalance \
+    kbd \
+    kexec-tools \
+    less \
+    ncurses \
+    NetworkManager \
+    openssh-clients \
+    openssh-server \
+    parted \
+    passwd \
+    plymouth \
+    policycoreutils \
+    procps-ng \
+    rng-tools \
+    rootfiles \
+    rpm \
+    rsyslog \
+    selinux-policy-targeted \
+    setup \
+    sg3_utils \
+    sg3_utils-libs \
+    shadow-utils \
+    sssd-common \
+    sssd-kcm \
+    sudo \
+    systemd \
+    util-linux \
+    vim-minimal \
+    xfsprogs
+
+# Install kernel and bootloaders:
+dnf --installroot=$ROOTFS --nogpgcheck --setopt=install_weak_deps=False -y install \
+    dracut-config-generic \
+    epel-release \
+    grub2 \
+    kernel \
+    linux-firmware \
+    lvm2
+
+# Install pkgs for my custom needs:
+dnf --installroot=$ROOTFS --nogpgcheck --setopt=install_weak_deps=False -y install \
+    atop \
+    authselect \
+    chrony \
+    cloud-init \
+    cloud-utils-growpart\
+    screen \
+    vim-enhanced
 
 # it will be configured with dhcpclient on boot
 #cat > $ROOTFS/etc/resolv.conf << HABR
@@ -125,7 +183,6 @@ chroot $ROOTFS fips-mode-setup --enable
 chroot $ROOTFS grub2-mkconfig -o /boot/grub2/grub.cfg
 chroot $ROOTFS grub2-install $DEVICE
 
-chroot $ROOTFS systemctl enable network.service
 chroot $ROOTFS systemctl enable sshd.service
 chroot $ROOTFS systemctl enable cloud-init.service
 chroot $ROOTFS systemctl mask tmp.mount
